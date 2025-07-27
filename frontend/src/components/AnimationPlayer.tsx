@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
-import { Animation, AnimationStatus } from '@/types/api';
-import ApiService from '@/services/api';
+import { Animation, AnimationStatus } from '../types/api';
+import ApiService from '../services/api';
 
 const PlayerContainer = styled.div`
   background: white;

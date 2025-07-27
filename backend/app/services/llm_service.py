@@ -1,47 +1,32 @@
 from typing import Optional, Dict, Any, List
 import asyncio
-import openai
-import anthropic
-import google.generativeai as genai
+import httpx
+import json
 
 from app.core.config import settings
 
 
 class LLMService:
     def __init__(self):
-        self.providers = []
-        self.current_provider = None
+        if not settings.UNIFIED_LLM_API_KEY:
+            raise ValueError("UNIFIED_LLM_API_KEY is not configured")
         
-        if settings.OPENAI_API_KEY:
-            self.providers.append("openai")
-            openai.api_key = settings.OPENAI_API_KEY
+        self.api_key = settings.UNIFIED_LLM_API_KEY
+        self.base_url = settings.UNIFIED_LLM_BASE_URL
+        self.default_model = settings.UNIFIED_LLM_DEFAULT_MODEL
+        self.current_provider = "unified"
         
-        if settings.ANTHROPIC_API_KEY:
-            self.providers.append("anthropic")
-            self.anthropic_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        
-        if settings.GOOGLE_API_KEY:
-            self.providers.append("google")
-            genai.configure(api_key=settings.GOOGLE_API_KEY)
-        
-        if not self.providers:
-            raise ValueError("No LLM API keys configured")
+        # HTTP client for async requests
+        self.client = httpx.AsyncClient(
+            timeout=httpx.Timeout(settings.LLM_TIMEOUT),
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+        )
     
-    async def generate_explanation(self, question: str, provider: Optional[str] = None) -> str:
-        if provider and provider in self.providers:
-            return await self._generate_with_provider(question, provider)
-        
-        for provider in self.providers:
-            try:
-                return await self._generate_with_provider(question, provider)
-            except Exception as e:
-                print(f"Provider {provider} failed: {e}")
-                continue
-        
-        raise Exception("All LLM providers failed")
-    
-    async def _generate_with_provider(self, question: str, provider: str) -> str:
-        self.current_provider = provider
+    async def generate_explanation(self, question: str, model: Optional[str] = None) -> str:
+        """Generate an educational explanation using the unified LLM API."""
         
         prompt = f"""You are an expert educational AI that creates clear, engaging explanations for whiteboard teaching.
 
@@ -56,33 +41,48 @@ Please provide a comprehensive explanation that would be suitable for whiteboard
 
 Focus on creating content that would work well with visual animations and whiteboard illustrations."""
 
-        if provider == "openai":
-            response = await openai.ChatCompletion.acreate(
-                model="gpt-4",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=1500
-            )
-            return response.choices[0].message.content
-        
-        elif provider == "anthropic":
-            response = await self.anthropic_client.messages.create(
-                model="claude-3-sonnet-20240229",
-                max_tokens=1500,
-                temperature=0.7,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return response.content[0].text
-        
-        elif provider == "google":
-            model = genai.GenerativeModel('gemini-pro')
-            response = await model.generate_content_async(prompt)
-            return response.text
-        
-        else:
-            raise ValueError(f"Unknown provider: {provider}")
+        return await self._call_unified_api(prompt, model or self.default_model)
     
-    async def generate_animation_script(self, explanation: str, animation_type: str) -> str:
+    async def _call_unified_api(self, prompt: str, model: str, temperature: Optional[float] = None, max_tokens: Optional[int] = None) -> str:
+        """Make a call to the unified LLM API using OpenAI-compatible format."""
+        
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": settings.LLM_SYSTEM_MESSAGE},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": temperature or settings.LLM_TEMPERATURE,
+            "max_tokens": max_tokens or settings.LLM_MAX_TOKENS,
+            "stream": False
+        }
+        
+        try:
+            response = await self.client.post(
+                f"{self.base_url}/chat/completions",
+                json=payload
+            )
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if "choices" not in data or not data["choices"]:
+                raise Exception("Invalid response format: no choices found")
+            
+            return data["choices"][0]["message"]["content"]
+            
+        except httpx.HTTPStatusError as e:
+            raise Exception(f"HTTP error {e.response.status_code}: {e.response.text}")
+        except httpx.RequestError as e:
+            raise Exception(f"Request error: {str(e)}")
+        except KeyError as e:
+            raise Exception(f"Invalid response format: missing key {e}")
+        except Exception as e:
+            raise Exception(f"Unified LLM API call failed: {str(e)}")
+    
+    async def generate_animation_script(self, explanation: str, animation_type: str, model: Optional[str] = None) -> str:
+        """Generate a Manim animation script using the unified LLM API."""
+        
         prompt = f"""Based on the following explanation, generate a detailed Manim animation script that will create an engaging whiteboard-style educational animation.
 
 Explanation: {explanation}
@@ -97,7 +97,8 @@ Generate Python code using the Manim library that creates a step-by-step animate
 
 Return only the Python Manim code, ready to execute."""
 
-        try:
-            return await self._generate_with_provider(prompt, self.current_provider or self.providers[0])
-        except Exception:
-            return await self.generate_explanation(prompt)
+        return await self._call_unified_api(prompt, model or self.default_model)
+    
+    async def close(self):
+        """Close the HTTP client connection."""
+        await self.client.aclose()

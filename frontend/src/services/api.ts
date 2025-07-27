@@ -6,7 +6,7 @@ import {
   ExplanationCreate, 
   Animation, 
   AnimationCreate 
-} from '@/types/api';
+} from '../types/api';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
@@ -72,11 +72,11 @@ export class ApiService {
     return response.data;
   }
 
-  static async getAnimationFileUrl(animationId: number): string {
+  static getAnimationFileUrl(animationId: number): string {
     return `${API_BASE_URL}/animations/${animationId}/file`;
   }
 
-  static async getAnimationThumbnailUrl(animationId: number): string {
+  static getAnimationThumbnailUrl(animationId: number): string {
     return `${API_BASE_URL}/animations/${animationId}/thumbnail`;
   }
 }

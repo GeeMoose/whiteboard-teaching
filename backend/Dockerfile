@@ -22,8 +22,8 @@ COPY . .
 # Create static directory for file serving
 RUN mkdir -p /app/static
 
-# Expose port
-EXPOSE 8000
+# Expose port (can be overridden by DOCKER_EXPOSE_PORT env var)
+EXPOSE ${DOCKER_EXPOSE_PORT:-8000}
 
-# Command to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Command to run the application (uses environment variables from config)
+CMD ["python", "-m", "app.main"]

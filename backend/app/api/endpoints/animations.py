@@ -154,12 +154,12 @@ async def generate_animation(animation_id: int):
         await db.commit()
         
         try:
-            animation_service = AnimationService()
-            file_path, thumbnail_path, manim_code, duration = await animation_service.generate_animation(
-                animation.title,
-                animation.description,
-                animation.animation_type
-            )
+            async with AnimationService() as animation_service:
+                file_path, thumbnail_path, manim_code, duration = await animation_service.generate_animation(
+                    animation.title,
+                    animation.description,
+                    animation.animation_type
+                )
             
             animation.file_path = file_path
             animation.thumbnail_path = thumbnail_path

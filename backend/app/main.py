@@ -16,9 +16,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Whiteboard Teaching AI",
+    title=settings.PROJECT_NAME,
     description="AI-powered whiteboard teaching with dynamic animations",
-    version="1.0.0",
+    version=settings.VERSION,
     lifespan=lifespan
 )
 
@@ -30,25 +30,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.include_router(api_router, prefix="/api/v1")
+app.mount(settings.STATIC_MOUNT_PATH, StaticFiles(directory=settings.STATIC_DIR), name="static")
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
 async def root():
-    return {"message": "Whiteboard Teaching AI API"}
+    return {"message": settings.API_ROOT_MESSAGE}
 
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": settings.API_HEALTH_MESSAGE}
 
 
 if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=settings.RELOAD,
+        log_level=settings.LOG_LEVEL
     )

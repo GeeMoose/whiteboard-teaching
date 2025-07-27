@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { createGlobalStyle } from 'styled-components';
 
-import Layout from '@/components/Layout';
-import HomePage from '@/pages/HomePage';
-import SessionPage from '@/pages/SessionPage';
+import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
+import SessionPage from './pages/SessionPage';
 
 const GlobalStyle = createGlobalStyle`
   * {

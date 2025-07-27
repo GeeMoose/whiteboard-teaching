@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MessageSquare, Play, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import QuestionInput from '@/components/QuestionInput';
-import AnimationPlayer from '@/components/AnimationPlayer';
-import ApiService from '@/services/api';
-import { Session, Explanation, Animation, ExplanationStatus, AnimationStatus, AnimationType } from '@/types/api';
+import QuestionInput from '../components/QuestionInput';
+import AnimationPlayer from '../components/AnimationPlayer';
+import ApiService from '../services/api';
+import { Session, Explanation, Animation, ExplanationStatus, AnimationStatus, AnimationType } from '../types/api';
 
 const SessionContainer = styled.div`
   max-width: 1200px;

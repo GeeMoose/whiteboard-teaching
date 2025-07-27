@@ -17,6 +17,12 @@ class AnimationService:
         self.output_dir.mkdir(exist_ok=True)
         self.llm_service = LLMService()
     
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.llm_service.close()
+    
     async def generate_animation(
         self, 
         title: str, 

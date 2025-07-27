@@ -101,6 +101,7 @@ async def process_explanation(explanation_id: int):
         explanation.status = ExplanationStatus.PROCESSING
         await db.commit()
         
+        llm_service = None
         try:
             llm_service = LLMService()
             explanation_text = await llm_service.generate_explanation(explanation.question)
@@ -112,5 +113,8 @@ async def process_explanation(explanation_id: int):
         except Exception as e:
             explanation.status = ExplanationStatus.FAILED
             explanation.metadata = {"error": str(e)}
+        finally:
+            if llm_service:
+                await llm_service.close()
         
         await db.commit()

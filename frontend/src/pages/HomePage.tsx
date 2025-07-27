@@ -5,9 +5,9 @@ import { Plus, BookOpen, Play, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-import QuestionInput from '@/components/QuestionInput';
-import ApiService from '@/services/api';
-import { Session, SessionCreate, Explanation, Animation } from '@/types/api';
+import QuestionInput from '../components/QuestionInput';
+import ApiService from '../services/api';
+import { Session, SessionCreate, Explanation, Animation } from '../types/api';
 
 const HomeContainer = styled.div`
   max-width: 1200px;

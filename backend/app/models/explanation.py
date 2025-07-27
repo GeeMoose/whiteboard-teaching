@@ -22,7 +22,7 @@ class Explanation(Base):
     explanation_text = Column(Text)
     status = Column(Enum(ExplanationStatus), default=ExplanationStatus.PENDING)
     llm_provider = Column(String)
-    metadata = Column(JSON, default=dict)
+    explanation_metadata = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

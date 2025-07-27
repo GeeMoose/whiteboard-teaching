@@ -33,7 +33,7 @@ class Animation(Base):
     duration = Column(Float)
     thumbnail_path = Column(String)
     manim_code = Column(Text)
-    metadata = Column(JSON, default=dict)
+    animation_metadata = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
