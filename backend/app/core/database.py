@@ -27,6 +27,9 @@ Base = declarative_base()
 
 
 async def init_db():
+    # Import models to ensure they are registered with Base
+    from app.models import Session, Explanation, Animation
+    
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

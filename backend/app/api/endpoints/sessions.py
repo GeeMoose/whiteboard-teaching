@@ -21,7 +21,7 @@ async def create_session(
         session_id=str(uuid.uuid4()),
         title=session_data.title,
         description=session_data.description,
-        metadata=session_data.metadata or {}
+        session_metadata=session_data.metadata or {}
     )
     
     db.add(session)
